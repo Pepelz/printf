@@ -77,7 +77,7 @@ int get_flag(char *s, params_t *params)
 		case '#':
 			i = params->hashtag_flag = 1;
 			break;
-		case '-'
+		case '-':
 			i = params->minus_flag = 1;
 			break;
 		case '0':
