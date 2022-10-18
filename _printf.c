@@ -1,53 +1,50 @@
 #include "main.h"
-#include <stdarg.h>
-#include <string.h>
-#include <unistd.h>
 
 /**
- * _printf - my print function
- * @format: string to be passed
- * Return: no of characters printed
+ *_printf - prints anything
+ *@format: the format string
+ *
+ *Return: number of bytes printed
  */
 
 int _printf(const char *format, ...)
 {
-	char buffer[100];
-	char *str;
-	int i = 0, j = 0;
-	va_list tob;
+	int sum = 0;
+	va_list ap;
+	char *p, *start;
+	params_t params = PARAMS_INIT;
 
-	va_start(tob, format);
-	while (format[i])
+	va_start(ap, format);
+
+	if (!format || (format[0] == '%' && !format[1]))
+		return (-1);
+	if (format[0] == '%' && format[1] == ' ' && !format[2])
+		return (-1);
+	for (p = (char *)format; *p; p++)
 	{
-		if (format[i] == '%')
+		init_params(&params, ap);
+		if (*p != '%')
 		{
-			i++;
-			switch (format[i])
-			{
-				case 'c':
-				{
-					buffer[j] = (char)va_arg(tob, int);
-					j++;
-					break;
-				}
-				case 's':
-				{
-					str = va_arg(tob, char*);
-					strcpy(&buffer[j], str);
-					j += strlen(str);
-					break;
-				}
-			}
+			sum += _putchar(*p);
+			continue;
 		}
+		start = p;
+		p++;
+		while (get_flag(p, &params)) /* while char at p is flag char */
+		{
+			p++; /* next char */
+		}
+		p = get_width(p, &params, ap);
+		p = get_precision(p, &params, ap);
+		if (get_modifier(p, &params))
+			p++;
+		if (!get_specifier(p))
+			sum += print_from_to(start, p,
+				params.l_modifier || params.h_modifier ? p - 1 : 0);
 		else
-		{
-			buffer[j] = format[i];
-			j++;
-		}
-		i++;
+			sum += get_print_func(p, ap, &params);
 	}
-	va_end(tob);
-
-	write(1, buffer, j);
-	return (j);
+	_putchar(BUF_FLUSH);
+	va_end(ap);
+	return (sum);
 }
